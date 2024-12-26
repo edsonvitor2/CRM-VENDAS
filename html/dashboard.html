@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Vendas</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
+    <link rel="stylesheet" href="/css/dashboard.css">
+</head>
+<header>
+    <ul>
+        <a href="/html/dashboard.html"><li>Dashboard</li>                   </a>
+        <a href="/html/listarVendas.html"><li>Relatorio De vendas</li>   </a>
+        <a href="/html/cadastrarVendas.html"><li>Cadastro De Vendas</li>    </a>
+    </ul>
+</header>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="logo">
+            <h2>AgeSystem 3.0</h2>
+        </div>
+        <div class="user-info">
+            <img src="/user.png" alt="User" class="user-img">
+            <p>Bem vindo, <br><span class="username">Base SKY</span></p>
+            <p class="status">Status<br><span class="available">Disponível</span> <br><span id="time">07:00:02</span></p>
+        </div>
+        <nav class="menu">
+            <ul>
+                <a href="/html/dashboard.html"> <li><i class="fas fa-home"></i> Home</li>  </a> 
+                <a href="/html/dashboard.html"> <li><i class="fas fa-chart-line"></i> Vendas</li>  </a>
+                <a href="/html/dashboard.html"> <li><i class="fas fa-user-plus"></i> Usuarios</li>  </a>
+                <a href="/html/dashboard.html"> <li><i class="fas fa-headphones"></i> Áudios</li>  </a>
+                <a href="/html/dashboard.html"> <li><i class="fas fa-list"></i> Roteiros</li>  </a>
+                <a href="/html/dashboard.html"> <li><i class="fas fa-clipboard"></i> Opina</li>  </a>
+                <a href="/html/dashboard.html"> <li><i class="fas fa-book"></i> Listas</li>  </a>
+                <a href="/html/dashboard.html"> <li><i class="fas fa-bullhorn"></i> Campanhas</li>  </a>
+                <a href="/html/dashboard.html"> <li><i class="fas fa-microphone"></i> Gravações</li>  </a>
+                <a href="/html/dashboard.html"> <li><i class="fas fa-user-shield"></i> Supervisão</li>  </a>
+            </ul>
+        </nav>
+    </div>
+
+    <!-- Conteúdo Principal -->
+    <div class="main-content">
+        <div class="header">
+            <h1>Dashboard Vendas</h1>
+            <div class="filters">
+                <label>Data Venda Início: <input type="date"></label>
+                <label>Data Venda Final: <input type="date"></label>
+                <label>Status: <select>
+                    <option>CHURN</option>
+                </select></label>
+                <label>Operadora: <select>
+                    <option>SKY</option>
+                    <option>VERO</option>
+                </select></label>
+                <label>Equipe: <select>
+                    <option>Goiania</option>
+                    <option>Caldas Novas</option>
+                    <option>Rio Verde</option>
+                </select></label>
+                <button class="update-btn">Atualizar</button>
+            </div>
+        </div>
+
+        <!-- Cards -->
+        <div class="cards">
+            <div class="card green">
+                <div class="img-circle">
+                    <img src="/icones/carrinho.png" alt="" >
+                </div>
+                <h3>TOTAL VENDAS</h3>
+                <p id="total_vendas">525</p>
+            </div>
+            <div class="card blue">
+                <div class="img-circle">
+                    <img src="/icones/dinheiro.png" alt="" >
+                </div>
+                <h3>RENDIMENTO</h3>
+                <p id="rendimento">R$ 50.236,00</p>
+            </div>
+            <div class="card red">
+                <div class="img-circle">
+                    <img src="/icones/propostas.png" alt="" >
+                </div>
+                <h3>PROPOSTAS PENDENTES</h3>
+                <p id="propostas">6</p>
+            </div>
+            <div class="card orange">
+                <div class="img-circle">
+                    <img src="/icones/efetividade.png" alt="" >
+                </div>
+                <h3>EFETIVIDADE</h3>
+                <p id="efetividade">0.00%</p>
+            </div>
+        </div>
+
+        <!-- Tabelas e Gráficos -->
+        
+        <div class="highlights">
+        <div class="highlight">
+            <p>VENDAS DIA</p>
+            <h2>1</h2>
+            <small>DESTAQUE HOJE</small>
+            <img src="/icones/perfil.png" alt="Carlos Daniel">
+            <p>Carlos Daniel Santos Silva</p>
+        </div>
+        <div class="highlight">
+            <p>VENDAS MÊS</p>
+            <h2>34</h2>
+            <small>DESTAQUE TOTAL</small>
+            <img src="/icones/perfil.png" alt="Sky">
+            <p>Miqueias da Silva Oliveira</p>
+        </div>
+
+        <div class="charts">
+            <div class="chart">
+                <h2>Rendimento Diário</h2>
+                <canvas id="rendimentoChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <div >
+        <h2>Vendas por Status</h2>
+        <canvas id="vendaStatus"></canvas>
+    </div>
+
+    <div >
+        <h2>Produtos vendidos</h2>
+        <canvas id="produtosVendidos"></canvas>
+    </div>
+
+    <div >
+        <h2>Top Vendedores</h2>
+        <canvas id="topVendedores"></canvas>
+    </div>
+    
+</div>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Função para gerar uma cor aleatória
+function getRandomColor() {
+    const letters = '0123456789ABCDEF';
+    let color = '#';
+    for (let i = 0; i < 6; i++) {
+        color += letters[Math.floor(Math.random() * 16)];
+    }
+    return color;
+}
+const randomColors = Array(9).fill().map(() => getRandomColor());
+
+new Chart(topVendedores, {
+    type: 'bar',
+    data: {
+        labels: [
+            'Miqueias da Silva Oliveira',
+            'Lucyelle Barbosa Menezes',
+            'João Gabriel Souza e Silva',
+            'Felipe Porto Sousa Rego',
+            'Carlos Daniel Santos Silva',
+            'Erivan Cardoso Alves',
+            'Gabriel da Silva Campos',
+            'Letícia Gabrielly Vieira Nunes',
+            'Willy dos Santos de Castro'
+        ],
+        datasets: [{
+            label: 'Vendas',
+            data: [47, 42, 40, 39, 30, 22, 22, 20, 18],
+            backgroundColor: randomColors,
+            borderColor: randomColors,
+            borderWidth: 1
+        }]
+    },
+    options: {
+        indexAxis: 'y', // Exibe barras horizontais
+        responsive: true,
+        plugins: {
+            legend: {
+                display: false // Remove a legenda se for desnecessária
+            },
+            title: {
+                display: true,
+                text: 'Top Vendedores'
+            },
+            tooltip: {
+                callbacks: {
+                    label: function (context) {
+                        return `${context.label}: ${context.raw} vendas`;
+                    }
+                }
+            },
+            datalabels: {
+                anchor: 'center',
+                align: 'center',
+                color: '#fff',
+                formatter: (value, ctx) => ctx.chart.data.labels[ctx.dataIndex] // Mostra o nome na barra
+            }
+        },
+        scales: {
+            x: {
+                beginAtZero: true
+            }
+        }
+    },
+    plugins: [ChartDataLabels] // Adicione o plugin para exibir texto dentro das barras
+});
+
+
+
+const produtosVendidos = document.getElementById('produtosVendidos').getContext('2d');
+    new Chart(produtosVendidos, {
+        type: 'bar',
+        data: {
+            labels: ['FIBRA 600 MEGA', 'FIBRA 400 MEGA', 'FIBRA 200 MEGA', 'TV - SUPER', 'DISNEY PLUS', 'TV - TOP', 'TV - SUPER II', 'FATURA PROTEGIDA', 'FATURA PROTEGIDA'],
+            datasets: [{
+                label: 'Vendas',
+                data: [123, 125, 70, 90, 110, 125, 89, 90, 149],
+                backgroundColor: randomColors, // Cores aleatórias
+                borderColor: randomColors, // Cor da borda igual à cor de fundo
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'top',
+                },
+                title: {
+                    display: true,
+                    text: 'Vendas por Produto'
+                }
+            }
+        }
+    });
+
+    const ctx = document.getElementById('rendimentoChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: ['11/12/2024', '12/12/2024', '13/12/2024', '14/12/2024'],
+            datasets: [{
+                label: 'Vendas',
+                data: [8000, 6000, 5000, 4000],
+                borderColor: 'blue',
+                fill: false
+            }, {
+                label: 'Comissãp',
+                data: [5000, 4000, 3000, 2000],
+                borderColor: 'black',
+                fill: false
+            }]
+        }
+    });
+
+    const vendaStatus = document.getElementById('vendaStatus').getContext('2d');
+    new Chart(vendaStatus, {
+        type: 'line',
+        data: {
+        labels: ['11/12/2024', '12/12/2024', '13/12/2024', '14/12/2024', '15/12/2024', '16/12/2024'],
+        datasets: [{
+            label: 'quantidade',
+            data: [150, 137, 110, 120,129,142],
+            borderColor: 'green',
+            fill: false
+        }, {
+            label: 'Concluido',
+            data: [148, 137, 109, 100,120,140], // Altere os valores
+            borderColor: 'blue',
+            fill: false
+        }, {
+            label: 'Pendente',
+            data: [2, 0, 1, 20,9,2], // Altere os valores
+            borderColor: 'red',
+            fill: false
+        }]
+}
+    });
+</script>
+<script src="/src/dashboard.js"></script>
+<script src="/login.js"></script>
+</body>
+</html>
