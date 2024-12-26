@@ -91,7 +91,7 @@ router.post('/listar-vendas', async (req, res) => {
 
         // Limite de resultados (quantidade)
         if (quantidade) {
-            query += ` TOP(@quantidade)`;
+            query += ` TOP (@quantidade) `;
         }
 
         // Executa a consulta SQL com os filtros aplicados
@@ -306,23 +306,45 @@ router.post('/cadastrar-venda', async (req, res) => {
         await sql.close();
     }
 });
+router.post('/vendaCliente', async (req, res) => {
+    let pool;
+    try {
+        const { id } = req.body; // Recebe o ID enviado no corpo da requisição
 
-async function obter_id(cpf){
-    const pool = await db();
-    const query_id = `SELECT id FROM clientes WHERE cpf = @cpf`;
+        if (!id) {
+            return res.status(400).json({ message: 'ID do cliente não fornecido.' });
+        }
 
-    const resultId = await pool.request()
-        .input('cpf', sql.NVarChar, cpf)
-        .query(query_id);
+        // Estabelece conexão com o banco de dados
+        pool = await db();
 
-    // Verifique se o id foi encontrado e atribua ao clienteId
-    const clienteId = resultId.recordset[0]?.id; // Usando optional chaining para evitar erro caso não encontre
-    if (!clienteId) {
-        throw new Error('Cliente não encontrado após inserção');
-    }else{
-        return clienteId;
+        // Consulta SQL para obter o cliente com base no ID
+        const query = 'SELECT * FROM clientes WHERE id = @id';
+
+        // Configura e executa a consulta
+        const result = await pool.request()
+            .input('id', sql.Int, id) // Define o parâmetro id
+            .query(query);
+
+        // Verifica se o cliente foi encontrado
+        if (result.recordset.length === 0) {
+            return res.status(404).json({ message: 'Cliente não encontrado.' });
+        }
+
+        // Responde com os dados do cliente encontrado
+        res.status(200).json({ cliente: result.recordset[0] });
+
+    } catch (error) {
+        console.error('Erro ao consultar cliente:', error.message);
+        res.status(500).json({ message: 'Erro ao processar os dados.' });
+    } finally {
+        // Fecha a conexão com o banco de dados, se criada
+        if (pool) {
+            await pool.close();
+        }
     }
-} 
+});
+
 
 
 module.exports = router;

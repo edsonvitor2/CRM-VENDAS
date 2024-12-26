@@ -40,13 +40,14 @@ class ListarVendas {
 
     async listarVendas(data) {
         try {
+            // Verifica se `data` foi passado, senão inicializa como objeto vazio
             if (data == undefined) {
-                
                 data = {};
             }
-            console.log(data)
+            console.log(data);
+    
             // Envia os dados para o servidor usando fetch
-            const response = await fetch('http://localhost:3000/vendas/listar-vendas', {
+            const response = await fetch('http://192.168.20.171:3000/vendas/listar-vendas', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -57,25 +58,68 @@ class ListarVendas {
             // Processa a resposta do servidor
             const result = await response.json();
             if (response.ok) {
-                // Exibe os resultados no HTML
+                const usuario = JSON.parse(sessionStorage.getItem('usuario'));
+                const user = usuario.user;
+    
+                // Ordena as vendas em ordem decrescente pelo cliente_id
+                const vendasOrdenadas = result.vendas.sort((a, b) => b.cliente_id - a.cliente_id);
+    
+                // Prepara o HTML para exibir as vendas
                 const resultadoDiv = document.getElementById('resultado');
                 let htmlContent = ''; // Acumula as linhas HTML
-                result.vendas.forEach(venda => {
-                    htmlContent += `
-                    <tr>
-                        <td>${venda.cliente_id}</td>
-                        <td>${venda.status}</td>
-                        <td>${venda.cpf_cliente}</td>
-                        <td>${venda.cliente}</td>
-                        <td>${venda.data_Status}</td>
-                        <td>${venda.operadora}</td>
-                        <td>${venda.vendedor}</td>
-                        <td>${Number(venda.valor_venda).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</td>
-                        <td>${venda.metodo_pagamento}</td>
-                        <td class="btn_venda">Abrir</td>
-                    </tr>`;
+    
+                vendasOrdenadas.forEach((venda, index) => {
+                    // Lógica para exibir vendas com base no cargo
+                    if (user.cargo === 'Vendedor') {
+                        // Exibe apenas vendas do vendedor logado
+                        if (venda.vendedor === user.usuario) {
+                            htmlContent += `
+                            <tr>
+                                <td>${venda.cliente_id}</td>
+                                <td>${venda.status}</td>
+                                <td>${venda.cpf_cliente}</td>
+                                <td>${venda.cliente}</td>
+                                <td>${venda.data_Status}</td>
+                                <td>${venda.operadora}</td>
+                                <td>${venda.vendedor}</td>
+                                <td>${Number(venda.valor_venda).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</td>
+                                <td>${venda.metodo_pagamento}</td>
+                                <td class="btn_venda" data-index="${index}">Abrir</td>
+                            </tr>`;
+                        }
+                    } else {
+                        // Exibe todas as vendas para outros cargos
+                        htmlContent += `
+                        <tr>
+                            <td>${venda.cliente_id}</td>
+                            <td>${venda.status}</td>
+                            <td>${venda.cpf_cliente}</td>
+                            <td>${venda.cliente}</td>
+                            <td>${venda.data_Status}</td>
+                            <td>${venda.operadora}</td>
+                            <td>${venda.vendedor}</td>
+                            <td>${Number(venda.valor_venda).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</td>
+                            <td>${venda.metodo_pagamento}</td>
+                            <td class="btn_venda" data-index="${index}">Abrir</td>
+                        </tr>`;
+                    }
                 });
-                resultadoDiv.innerHTML = htmlContent; // Atualiza o HTML de uma só vez
+    
+                // Atualiza o HTML de uma só vez
+                resultadoDiv.innerHTML = htmlContent;
+    
+                // Adiciona evento de clique para cada botão "Abrir"
+                document.querySelectorAll('.btn_venda').forEach(button => {
+                    button.addEventListener('click', () => {
+                        const index = button.getAttribute('data-index');
+                        const venda = vendasOrdenadas[index];
+                        sessionStorage.setItem('vendaSelecionada', JSON.stringify(venda));
+                        console.log('Venda salva no sessionStorage:', venda);
+
+                        window.open('venda.html', '_blank');
+
+                    });
+                });
             } else {
                 alert('Erro ao buscar vendas: ' + result.message);
             }
@@ -84,6 +128,9 @@ class ListarVendas {
             alert('Ocorreu um erro ao tentar buscar as vendas.');
         }
     }
+    
+    
+    
     
 }
 

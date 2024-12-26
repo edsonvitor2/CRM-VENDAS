@@ -1,11 +1,19 @@
-class Dashboard{
-    constructor(){
+class Dashboard {
+    constructor() {
+        
+        // Instancia a classe User
+        this.user = new User();
+        // Pega os dados do usuário
+        this.userData = this.user.usuarioLogado; // Acessa a propriedade salva no construtor
+        // Inicializa as vendas
         this.listarVendas();
+
     }
 
     async listarVendas(data) {
         try {
             const usuario = JSON.parse(sessionStorage.getItem('usuario'));
+            console.log(this.userData);
             let user = usuario.user;
             var total_vendas = 0;
             var total_valores = 0;
@@ -17,7 +25,7 @@ class Dashboard{
             console.log(data);
     
             // Envia os dados para o servidor usando fetch
-            const response = await fetch('http://localhost:3000/vendas/listar-vendas', {
+            const response = await fetch('http://192.168.20.171:3000/vendas/listar-vendas', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -31,18 +39,33 @@ class Dashboard{
                 // Exibe os resultados no HTML
                 result.vendas.forEach(venda => {
                     console.log(venda);
-                    if (venda.vendedor == user.usuario) {
-                        let valor = parseInt(venda.valor_venda) || 0; // Garante que o valor seja um número
     
-                        if (venda.status == 'concluido') {
-                            total_vendas = total_vendas + 1;
-                            total_valores = total_valores + valor;
-                        } else {
-                            propostas = propostas + 1;
+                    // Lógica para exibir vendas com base no cargo
+                    if (user.cargo === 'Vendedor') {
+                        // Ocultar Graficos
+                        document.querySelector("#prodVendidos").style.display = 'none';
+                        document.querySelector("#vendasStatus").style.display = 'none';
+                        // Exibir apenas as vendas do vendedor logado
+                        if (venda.vendedor == user.usuario) {
+                            let valor = parseInt(venda.valor_venda) || 0;
+
+                            if (venda.status == 'concluido') {
+                                total_vendas++;
+                                total_valores += valor;
+                            } else {
+                                propostas++;
+                            }
                         }
                     } else {
-                        console.log('Usuario Não Possui Vendas Cadastradas!!!');
-                        console.log(venda.vendedor, user.usuario);
+                        // Exibir todas as vendas para outros cargos
+                        let valor = parseInt(venda.valor_venda) || 0;
+    
+                        if (venda.status == 'concluido') {
+                            total_vendas++;
+                            total_valores += valor;
+                        } else {
+                            propostas++;
+                        }
                     }
                 });
     
@@ -65,6 +88,7 @@ class Dashboard{
             alert('Ocorreu um erro ao tentar buscar as vendas.');
         }
     }
+    
     
 }
 
