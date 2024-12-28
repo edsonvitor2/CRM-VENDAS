@@ -31,13 +31,8 @@
                 <a href="/html/dashboard.html"> <li><i class="fas fa-home"></i> Home</li>  </a> 
                 <a href="/html/dashboard.html"> <li><i class="fas fa-chart-line"></i> Vendas</li>  </a>
                 <a href="/html/dashboard.html"> <li><i class="fas fa-user-plus"></i> Usuarios</li>  </a>
-                <a href="/html/dashboard.html"> <li><i class="fas fa-headphones"></i> Áudios</li>  </a>
-                <a href="/html/dashboard.html"> <li><i class="fas fa-list"></i> Roteiros</li>  </a>
-                <a href="/html/dashboard.html"> <li><i class="fas fa-clipboard"></i> Opina</li>  </a>
                 <a href="/html/dashboard.html"> <li><i class="fas fa-book"></i> Listas</li>  </a>
                 <a href="/html/dashboard.html"> <li><i class="fas fa-bullhorn"></i> Campanhas</li>  </a>
-                <a href="/html/dashboard.html"> <li><i class="fas fa-microphone"></i> Gravações</li>  </a>
-                <a href="/html/dashboard.html"> <li><i class="fas fa-user-shield"></i> Supervisão</li>  </a>
             </ul>
         </nav>
     </div>
@@ -46,23 +41,46 @@
     <div class="main-content">
         <div class="header">
             <h1>Dashboard Vendas</h1>
-            <div class="filters">
-                <label>Data Venda Início: <input type="date"></label>
-                <label>Data Venda Final: <input type="date"></label>
-                <label>Status: <select>
-                    <option>CHURN</option>
-                </select></label>
-                <label>Operadora: <select>
-                    <option>SKY</option>
-                    <option>VERO</option>
-                </select></label>
-                <label>Equipe: <select>
-                    <option>Goiania</option>
-                    <option>Caldas Novas</option>
-                    <option>Rio Verde</option>
-                </select></label>
-                <button class="update-btn">Atualizar</button>
-            </div>
+            <form id="filtroFormulario">
+                <div class="filters">
+                    <div class="form-group">
+                        <label for="dataInicio">Data Venda Início:</label>
+                        <input type="date" id="dataInicio" name="dataInicio">
+                    </div>
+                    <div class="form-group">
+                        <label for="dataFinal">Data Venda Final:</label>
+                        <input type="date" id="dataFinal" name="dataFinal">
+                    </div>
+                    <div class="form-group">
+                        <label for="status">Status:</label>
+                        <select id="status" name="status">
+                            <option value="CHURN">CHURN</option>
+                            <!-- Adicione outros status aqui -->
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="operadora">Operadora:</label>
+                        <select id="operadora" name="operadora">
+                            <option value="SKY">SKY</option>
+                            <option value="VERO">VERO</option>
+                            <!-- Adicione outras operadoras aqui -->
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="equipe">Equipe:</label>
+                        <select id="equipe" name="equipe">
+                            <option value="Goiania">Goiania</option>
+                            <option value="Caldas Novas">Caldas Novas</option>
+                            <option value="Rio Verde">Rio Verde</option>
+                            <!-- Adicione outras equipes aqui -->
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <button type="submit" class="update-btn">Atualizar</button>
+                    </div>
+                </div>
+            </form>
+            
         </div>
 
         <!-- Cards -->
@@ -74,6 +92,20 @@
                 <h3>TOTAL VENDAS</h3>
                 <p id="total_vendas">525</p>
             </div>
+            <div class="card red">
+                <div class="img-circle">
+                    <img src="/icones/propostas.png" alt="" >
+                </div>
+                <h3>Vendas PENDENTES</h3>
+                <p id="propostas">6</p>
+            </div>
+            <div class="card roxo">
+                <div class="img-circle">
+                    <img src="/icones/propostas.png" alt="" >
+                </div>
+                <h3>Vendas Concluidas</h3>
+                <p id="concluidas">0</p>
+            </div>
             <div class="card blue">
                 <div class="img-circle">
                     <img src="/icones/dinheiro.png" alt="" >
@@ -81,13 +113,7 @@
                 <h3>RENDIMENTO</h3>
                 <p id="rendimento">R$ 50.236,00</p>
             </div>
-            <div class="card red">
-                <div class="img-circle">
-                    <img src="/icones/propostas.png" alt="" >
-                </div>
-                <h3>PROPOSTAS PENDENTES</h3>
-                <p id="propostas">6</p>
-            </div>
+            
             <div class="card orange">
                 <div class="img-circle">
                     <img src="/icones/efetividade.png" alt="" >
@@ -140,148 +166,7 @@
     
 </div>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script>
-    // Função para gerar uma cor aleatória
-function getRandomColor() {
-    const letters = '0123456789ABCDEF';
-    let color = '#';
-    for (let i = 0; i < 6; i++) {
-        color += letters[Math.floor(Math.random() * 16)];
-    }
-    return color;
-}
-const randomColors = Array(9).fill().map(() => getRandomColor());
-
-new Chart(topVendedores, {
-    type: 'bar',
-    data: {
-        labels: [
-            'Miqueias da Silva Oliveira',
-            'Lucyelle Barbosa Menezes',
-            'João Gabriel Souza e Silva',
-            'Felipe Porto Sousa Rego',
-            'Carlos Daniel Santos Silva',
-            'Erivan Cardoso Alves',
-            'Gabriel da Silva Campos',
-            'Letícia Gabrielly Vieira Nunes',
-            'Willy dos Santos de Castro'
-        ],
-        datasets: [{
-            label: 'Vendas',
-            data: [47, 42, 40, 39, 30, 22, 22, 20, 18],
-            backgroundColor: randomColors,
-            borderColor: randomColors,
-            borderWidth: 1
-        }]
-    },
-    options: {
-        indexAxis: 'y', // Exibe barras horizontais
-        responsive: true,
-        plugins: {
-            legend: {
-                display: false // Remove a legenda se for desnecessária
-            },
-            title: {
-                display: true,
-                text: 'Top Vendedores'
-            },
-            tooltip: {
-                callbacks: {
-                    label: function (context) {
-                        return `${context.label}: ${context.raw} vendas`;
-                    }
-                }
-            },
-            datalabels: {
-                anchor: 'center',
-                align: 'center',
-                color: '#fff',
-                formatter: (value, ctx) => ctx.chart.data.labels[ctx.dataIndex] // Mostra o nome na barra
-            }
-        },
-        scales: {
-            x: {
-                beginAtZero: true
-            }
-        }
-    },
-    plugins: [ChartDataLabels] // Adicione o plugin para exibir texto dentro das barras
-});
-
-
-
-const produtosVendidos = document.getElementById('produtosVendidos').getContext('2d');
-    new Chart(produtosVendidos, {
-        type: 'bar',
-        data: {
-            labels: ['FIBRA 600 MEGA', 'FIBRA 400 MEGA', 'FIBRA 200 MEGA', 'TV - SUPER', 'DISNEY PLUS', 'TV - TOP', 'TV - SUPER II', 'FATURA PROTEGIDA', 'FATURA PROTEGIDA'],
-            datasets: [{
-                label: 'Vendas',
-                data: [123, 125, 70, 90, 110, 125, 89, 90, 149],
-                backgroundColor: randomColors, // Cores aleatórias
-                borderColor: randomColors, // Cor da borda igual à cor de fundo
-                borderWidth: 1
-            }]
-        },
-        options: {
-            responsive: true,
-            plugins: {
-                legend: {
-                    position: 'top',
-                },
-                title: {
-                    display: true,
-                    text: 'Vendas por Produto'
-                }
-            }
-        }
-    });
-
-    const ctx = document.getElementById('rendimentoChart').getContext('2d');
-    new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels: ['11/12/2024', '12/12/2024', '13/12/2024', '14/12/2024'],
-            datasets: [{
-                label: 'Vendas',
-                data: [8000, 6000, 5000, 4000],
-                borderColor: 'blue',
-                fill: false
-            }, {
-                label: 'Comissãp',
-                data: [5000, 4000, 3000, 2000],
-                borderColor: 'black',
-                fill: false
-            }]
-        }
-    });
-
-    const vendaStatus = document.getElementById('vendaStatus').getContext('2d');
-    new Chart(vendaStatus, {
-        type: 'line',
-        data: {
-        labels: ['11/12/2024', '12/12/2024', '13/12/2024', '14/12/2024', '15/12/2024', '16/12/2024'],
-        datasets: [{
-            label: 'quantidade',
-            data: [150, 137, 110, 120,129,142],
-            borderColor: 'green',
-            fill: false
-        }, {
-            label: 'Concluido',
-            data: [148, 137, 109, 100,120,140], // Altere os valores
-            borderColor: 'blue',
-            fill: false
-        }, {
-            label: 'Pendente',
-            data: [2, 0, 1, 20,9,2], // Altere os valores
-            borderColor: 'red',
-            fill: false
-        }]
-}
-    });
-</script>
 <script src="/login.js"></script>
-
 <script src="/src/dashboard.js"></script>
 
 </body>

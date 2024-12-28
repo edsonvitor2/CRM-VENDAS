@@ -43,6 +43,19 @@ router.post('/listar-vendas', async (req, res) => {
             quantidade // Limite de vendas a retornar
         } = req.body;
 
+        console.log(nome_cliente,
+            data_status_inicio,
+            data_status_fim,
+            data_efetivacao_inicio,
+            data_efetivacao_fim,
+            data_venda_inicio,
+            data_venda_fim,
+            data_agendamento_inicio,
+            data_agendamento_fim,
+            vendedor,
+            cpf_cliente,
+            operadora,
+            quantidade)
         // Conecta ao banco especificado
         const pool = await db();
 
@@ -102,20 +115,20 @@ router.post('/listar-vendas', async (req, res) => {
             request.input('cliente', sql.NVarChar, `%${nome_cliente}%`); // Usando LIKE para filtro parcial
         }
         if (data_status_inicio && data_status_fim) {
-            request.input('data_status_inicio', sql.Date, data_status_inicio);
-            request.input('data_status_fim', sql.Date, data_status_fim);
+            request.input('data_status_inicio', sql.NVarChar, data_status_inicio);
+            request.input('data_status_fim', sql.NVarChar, data_status_fim);
         }
         if (data_efetivacao_inicio && data_efetivacao_fim) {
-            request.input('data_efetivacao_inicio', sql.Date, data_efetivacao_inicio);
-            request.input('data_efetivacao_fim', sql.Date, data_efetivacao_fim);
+            request.input('data_efetivacao_inicio', sql.NVarChar, data_efetivacao_inicio);
+            request.input('data_efetivacao_fim', sql.NVarChar, data_efetivacao_fim);
         }
         if (data_venda_inicio && data_venda_fim) {
-            request.input('data_venda_inicio', sql.Date, data_venda_inicio);
-            request.input('data_venda_fim', sql.Date, data_venda_fim);
+            request.input('data_venda_inicio', sql.NVarChar, data_venda_inicio);
+            request.input('data_venda_fim', sql.NVarChar, data_venda_fim);
         }
         if (data_agendamento_inicio && data_agendamento_fim) {
-            request.input('data_agendamento_inicio', sql.Date, data_agendamento_inicio);
-            request.input('data_agendamento_fim', sql.Date, data_agendamento_fim);
+            request.input('data_agendamento_inicio', sql.NVarChar, data_agendamento_inicio);
+            request.input('data_agendamento_fim', sql.NVarChar, data_agendamento_fim);
         }
         if (vendedor) {
             request.input('vendedor', sql.NVarChar, `%${vendedor}%`);
@@ -143,10 +156,11 @@ router.post('/listar-vendas', async (req, res) => {
 
 router.post('/cadastrar-venda', async (req, res) => {
     const agora = new Date();
-    let data = agora.toLocaleDateString();
+    let data = agora.toISOString().split('T')[0]
     let hora = agora.toLocaleTimeString();
 
     const {
+        equipe,
         bairro,
         cep,
         cidade,
@@ -173,6 +187,7 @@ router.post('/cadastrar-venda', async (req, res) => {
         vendedor // Recebe o vendedor
     } = req.body;
 
+    console.log('equipe:'+equipe);
     // Logando os dados recebidos
     console.log('Dados recebidos:', {
         bairro, cep, cidade, complemento, cpf, data_emissao, data_nascimento, email, estado_civil, genero,
@@ -274,20 +289,22 @@ router.post('/cadastrar-venda', async (req, res) => {
         // Query de inserção da venda
         const queryVenda = `
             INSERT INTO Venda (
-                status, cpf_cliente, cliente, cliente_id, data_status, vendedor, 
-                operadora, produtos, valor_venda, valor_comissao, metodo_pagamento
+                equipe,status, cpf_cliente, cliente, cliente_id, data_status, vendedor, 
+                operadora, produtos, valor_venda, valor_comissao, metodo_pagamento,data_venda
             ) VALUES (
-                'pre-venda', @cpf_cliente, @cliente, @cliente_id, @data_status, @vendedor, 
-                @operadora, @produtos, @valor_venda, @valor_comissao, @metodo_pagamento
+                @equipe,'pre-venda', @cpf_cliente, @cliente, @cliente_id, @data_status, @vendedor, 
+                @operadora, @produtos, @valor_venda, @valor_comissao, @metodo_pagamento,@data_venda
             );
         `;
 
         // Insere a venda
         await pool.request()
+            .input('equipe', sql.NVarChar, equipe)
             .input('cpf_cliente', sql.NVarChar, cpf)
             .input('cliente', sql.NVarChar, nome)
             .input('cliente_id', sql.Int, clienteId)
-            .input('data_status', sql.NVarChar, `${data} ${hora}`)
+            .input('data_venda', sql.NVarChar, data)
+            .input('data_status', sql.NVarChar, `${data}`)
             .input('vendedor', sql.NVarChar, vendedor)
             .input('operadora', sql.NVarChar, operadora)
             .input('produtos', sql.NVarChar, produtos)
@@ -345,7 +362,147 @@ router.post('/vendaCliente', async (req, res) => {
     }
 });
 
+router.put('/editar-venda/:id', async (req, res) => {
+    const vendaId = req.params.id; // ID da venda a ser editada
+    console.log(vendaId); // Para verificar o ID no console
+    const {
+        bairro,
+        cep,
+        cidade,
+        complemento,
+        cpf,
+        data_agendamento,
+        data_efetivacao,
+        data_emissao,
+        data_nascimento,
+        data_status,
+        data_venda,
+        email,
+        estado_civil,
+        genero,
+        logradouro,
+        metodo_pagamento,
+        nome,
+        numero,
+        operadora,
+        orgao_emissor,
+        produtos,
+        relato,
+        rg,
+        status_venda,
+        telefone_celular,
+        telefone_whatsapp,
+        uf,
+        vendedor
+    } = req.body;
 
+    const pool = await db(); // Conexão com o banco de dados
+
+    try {
+        // Verifica se a venda existe no banco de dados
+        const queryCheckVenda = `SELECT * FROM Venda WHERE cliente_id = @vendaId`;
+        const vendaExistente = await pool.request()
+            .input('vendaId', sql.Int, vendaId)
+            .query(queryCheckVenda);
+
+        if (vendaExistente.recordset.length === 0) {
+            return res.status(404).json({ message: 'Venda não encontrada.' });
+        }
+
+        // Atualiza os dados do cliente
+        const queryAtualizarCliente = `
+            UPDATE clientes
+            SET 
+                bairro = @bairro,
+                cep = @cep,
+                cidade = @cidade,
+                complemento = @complemento,
+                cpf = @cpf,
+                data_emissao = @data_emissao,
+                data_nascimento = @data_nascimento,
+                email = @email,
+                estado_civil = @estado_civil,
+                genero = @genero,
+                logradouro = @logradouro,
+                metodo_pagamento = @metodo_pagamento,
+                nome = @nome,
+                numero = @numero,
+                orgao_emissor = @orgao_emissor,
+                produtos = @produtos,
+                relato = @relato,
+                rg = @rg,
+                telefone_celular = @telefone_celular,
+                telefone_whatsapp = @telefone_whatsapp,
+                uf = @uf,
+                operadora = @operadora
+            WHERE id = @clienteId
+        `;
+
+        await pool.request()
+            .input('clienteId', sql.Int, vendaId) // Usando a coluna correta: id na tabela clientes
+            .input('bairro', sql.NVarChar, bairro)
+            .input('cep', sql.NVarChar, cep)
+            .input('cidade', sql.NVarChar, cidade)
+            .input('complemento', sql.NVarChar, complemento)
+            .input('cpf', sql.NVarChar, cpf)
+            .input('data_emissao', sql.NVarChar, data_emissao)
+            .input('data_nascimento', sql.NVarChar, data_nascimento)
+            .input('email', sql.NVarChar, email)
+            .input('estado_civil', sql.NVarChar, estado_civil)
+            .input('genero', sql.NVarChar, genero)
+            .input('logradouro', sql.NVarChar, logradouro)
+            .input('metodo_pagamento', sql.NVarChar, metodo_pagamento)
+            .input('nome', sql.NVarChar, nome)
+            .input('numero', sql.NVarChar, numero)
+            .input('orgao_emissor', sql.NVarChar, orgao_emissor)
+            .input('produtos', sql.NVarChar, produtos)
+            .input('relato', sql.NVarChar, relato)
+            .input('rg', sql.NVarChar, rg)
+            .input('telefone_celular', sql.NVarChar, telefone_celular)
+            .input('telefone_whatsapp', sql.NVarChar, telefone_whatsapp)
+            .input('uf', sql.NVarChar, uf)
+            .input('operadora', sql.NVarChar, operadora)
+            .query(queryAtualizarCliente);
+
+        // Atualiza os dados da venda
+        const queryAtualizarVenda = `
+            UPDATE Venda
+            SET 
+                cliente = @nome,
+                status = @status_venda,
+                data_status = @data_status,
+                data_venda = @data_venda,
+                data_agendamento = @data_agendamento,
+                data_efetivacao = @data_efetivacao,
+                produtos = @produtos,
+                vendedor = @vendedor,
+                metodo_pagamento = @metodo_pagamento,
+                operadora = @operadora
+            WHERE cliente_id = @clienteId
+        `;
+
+        await pool.request()
+            .input('nome', sql.NVarChar, nome)
+            .input('status_venda', sql.NVarChar, status_venda)
+            .input('data_status', sql.NVarChar, data_status)
+            .input('data_venda', sql.NVarChar, data_venda)
+            .input('data_agendamento', sql.NVarChar, data_agendamento)
+            .input('data_efetivacao', sql.NVarChar, data_efetivacao)
+            .input('produtos', sql.NVarChar, produtos)
+            .input('vendedor', sql.NVarChar, vendedor)
+            .input('metodo_pagamento', sql.NVarChar, metodo_pagamento)
+            .input('operadora', sql.NVarChar, operadora)
+            .input('clienteId', sql.Int, vendaId) // Usando a coluna correta: cliente_id na tabela Venda
+            .query(queryAtualizarVenda);
+
+        res.status(200).json({ message: 'Venda atualizada com sucesso!' });
+    } catch (error) {
+        console.error('Erro ao atualizar venda:', error.message);
+        res.status(500).json({ message: 'Erro ao atualizar a venda.' });
+    } finally {
+        await sql.close();
+    }
+});
 
 module.exports = router;
 

@@ -2,6 +2,7 @@ class Vendas {
     constructor() {
         this.interface();
 
+        
     }
 
     interface() {
@@ -79,6 +80,9 @@ class Vendas {
         const usuario = JSON.parse(sessionStorage.getItem('usuario'));
         const vendedor = usuario.user.usuario;
 
+        let equipe = usuario.user.equqipe;
+        console.log(usuario.user.equqipe);
+
         // Seleciona o formulário
         const form = document.getElementById('formulario'); // Remove '.target'
     
@@ -104,6 +108,7 @@ class Vendas {
     
         // Adiciona o vendedor nos dados
         data["vendedor"] = vendedor;
+        data["equipe"] = equipe;
        
     
         // Converte o array de produtos para uma string separada por vírgulas

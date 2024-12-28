@@ -84,7 +84,7 @@ class ListarVendas {
                                 <td>${venda.vendedor}</td>
                                 <td>${Number(venda.valor_venda).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</td>
                                 <td>${venda.metodo_pagamento}</td>
-                                <td class="btn_venda" data-index="${index}">Abrir</td>
+                                <td class="btn_venda" data-index="${index}">Editar</td>
                             </tr>`;
                         }
                     } else {
@@ -110,14 +110,23 @@ class ListarVendas {
     
                 // Adiciona evento de clique para cada botão "Abrir"
                 document.querySelectorAll('.btn_venda').forEach(button => {
+                    const usuario = JSON.parse(sessionStorage.getItem('usuario'));
+                    const cargo = usuario.user.cargo;
+                    
                     button.addEventListener('click', () => {
-                        const index = button.getAttribute('data-index');
-                        const venda = vendasOrdenadas[index];
-                        sessionStorage.setItem('vendaSelecionada', JSON.stringify(venda));
-                        console.log('Venda salva no sessionStorage:', venda);
-
-                        window.open('venda.html', '_blank');
-
+                        if(cargo == 'Vendedor'){
+                        alert('Sem Autorização Para Editar Vendas.');
+                        console.log(cargo)
+                        return false;
+                        }else{
+                            console.log(cargo)
+                            const index = button.getAttribute('data-index');
+                            const venda = vendasOrdenadas[index];
+                            sessionStorage.setItem('vendaSelecionada', JSON.stringify(venda));
+                            console.log('Venda salva no sessionStorage:', venda);
+    
+                            window.open('venda.html', '_blank');
+                        }
                     });
                 });
             } else {

@@ -5,11 +5,12 @@ class EditarVendas {
     }
 
     interface() {
-        let pesquisa = document.querySelector("form");
+        let atualizarVenda = document.querySelector("#formulario");
 
-        pesquisa.addEventListener('submit', async (event) => {
+        atualizarVenda.addEventListener('submit', async (event) => {
             event.preventDefault(); // Impede o envio normal do formulário
-
+            
+            this.editarVendas();
         });
 
         
@@ -68,8 +69,13 @@ class EditarVendas {
         const vendaSelecionada = JSON.parse(sessionStorage.getItem('vendaSelecionada'));
 
         console.log(vendaSelecionada.data_Status);
-
+        
         document.querySelector("#cpf").value = vendaSelecionada.cpf_cliente;
+
+        document.querySelector("#data_venda").value = vendaSelecionada.data_venda;
+        document.querySelector("#data_agendamento").value = vendaSelecionada.data_agendamento;
+        document.querySelector("#data_efetivacao").value = vendaSelecionada.data_efetivacao;
+
         document.querySelector("#nome").value = vendaSelecionada.cliente;
         document.querySelector("#data_nascimento").value = result.cliente.data_nascimento;
         document.querySelector("#genero").value = result.cliente.genero;
@@ -89,41 +95,102 @@ class EditarVendas {
         document.querySelector("#uf").value = result.cliente.uf;
         document.querySelector("#operadora").value = result.cliente.operadora;
         document.querySelector("#prod").value = result.cliente.produtos;
+
+        const produtosSelecionados = result.cliente.produtos; // Array de produtos
+        const selectElement = document.querySelector("#produtos");
+        // Itera por todas as opções do select
+        Array.from(selectElement.options).forEach(option => {
+            // Marca como selecionado se o valor da opção estiver na lista
+            option.selected = produtosSelecionados.includes(option.value);
+        });
+
         document.querySelector("#metodo_pagamento").value = vendaSelecionada.metodo_pagamento;
         document.querySelector("#relato").value = result.cliente.relato;
         document.querySelector("#status_venda").value = vendaSelecionada.status;
-        document.querySelector("#data_status").value = data;
-        
+        document.querySelector("#data_status").value = vendaSelecionada.data_Status;
+
+        //sessionStorage.removeItem('vendaSelecionada');
+
     }
     
+    async editarVendas() {
+        var vendaId = 0;
+        const vendaSelecionada = JSON.parse(sessionStorage.getItem('vendaSelecionada'));
+        const usuario = JSON.parse(sessionStorage.getItem('usuario'));
+        const vendedor = usuario.user.usuario;
     
-    async editarVendas(data) {
-        try {
-            // Verifica se `data` foi passado, senão inicializa como objeto vazio
-            if (data == undefined) {
-                data = {};
+        // Seleciona o formulário
+        const form = document.getElementById('formulario');
+        if (!form) {
+            console.error("Formulário não encontrado!");
+            return;
+        }
+    
+        const formData = new FormData(form);
+        const data = {};
+    
+        // Processar o FormData
+        formData.forEach((value, key) => {
+            if (key === "produtos[]") {
+                if (!data["produtos"]) {
+                    data["produtos"] = [];
+                }
+                data["produtos"].push(value);
+            } else {
+                data[key] = value;
             }
-            console.log(data);
+        });
     
-            // Envia os dados para o servidor usando fetch
-            const response = await fetch('http://192.168.20.171:3000/vendas/editar-vendas', {
-                method: 'POST',
+        // Adiciona o vendedor nos dados
+        data["vendedor"] = vendedor;
+    
+        console.log(vendaId)
+        // Adiciona o ID da venda
+        data["id"] = vendaSelecionada.cliente_id;
+        vendaId = vendaSelecionada.cliente_id;
+        // Converte o array de produtos para uma string separada por vírgulas
+        if (data["produtos"] && data["produtos"].length > 0) {
+            data["produtos"] = data["produtos"].join(',');
+        }
+    
+        console.log("Dados enviados:", data);
+    
+        // Enviar os dados ao servidor
+        try {
+            const response = await fetch(`http://192.168.20.171:3000/vendas/editar-venda/${vendaId}`, {
+                method: "PUT", // Altere para PUT
                 headers: {
-                    'Content-Type': 'application/json',
+                    "Content-Type": "application/json",
                 },
                 body: JSON.stringify(data),
             });
     
-            // Processa a resposta do servidor
-            const result = await response.json();
-            console.log(result);
+            if (!response.ok) {
+                throw new Error(`Erro ao editar a venda: ${response.statusText}`);
+            }
+    
+            const responseData = await response.json();
+            alert("Venda editada com sucesso!");
+            window.close();
+
         } catch (error) {
-            console.error('Erro ao enviar a requisição:', error);
-            alert('Ocorreu um erro ao tentar buscar as vendas.');
+            console.error("Erro ao editar a venda:", error);
         }
     }
+    
     
 }
 
 // Inicializa a classe
 var editarVenda = new EditarVendas();
+
+const statusVendaSelect = document.getElementById('status_venda');
+
+    // Adiciona o evento de mudança (change)
+    statusVendaSelect.addEventListener('change', function () {
+        
+        const hoje = new Date();
+        const dataISO = hoje.toISOString().split('T')[0];
+        document.querySelector("#data_status").value = dataISO;
+
+    });
