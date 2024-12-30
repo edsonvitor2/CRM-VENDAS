@@ -142,7 +142,7 @@ class EditarVendas {
         });
     
         // Adiciona o vendedor nos dados
-        data["vendedor"] = vendedor;
+        data["vendedor"] = vendaSelecionada.vendedor;
     
         console.log(vendaId)
         // Adiciona o ID da venda

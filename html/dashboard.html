@@ -45,22 +45,39 @@
                 <div class="filters">
                     <div class="form-group">
                         <label for="dataInicio">Data Venda Início:</label>
-                        <input type="date" id="dataInicio" name="dataInicio">
+                        <input type="date" id="data_venda_inicio" name="data_venda_inicio">
                     </div>
                     <div class="form-group">
                         <label for="dataFinal">Data Venda Final:</label>
-                        <input type="date" id="dataFinal" name="dataFinal">
+                        <input type="date" id="data_venda_fim" name="data_venda_fim">
                     </div>
                     <div class="form-group">
                         <label for="status">Status:</label>
                         <select id="status" name="status">
-                            <option value="CHURN">CHURN</option>
-                            <!-- Adicione outros status aqui -->
+                            <option value="">Todos</option>
+                            <option value="Concluído">Concluído</option>
+                            <option value="Pendente Instalação">Pendente Instalação</option>
+                            <option value="Venda Retornada">Venda Retornada</option>
+                            <option value="Sem Cobertura">Sem Cobertura</option>
+                            <option value="TAXA CLIENTE">TAXA CLIENTE</option>
+                            <option value="Pré-Venda">Pré-Venda</option>
+                            <option value="FALTA PROVA DE VIDA">FALTA PROVA DE VIDA</option>
+                            <option value="Proposta">Proposta</option>
+                            <option value="Cancelado">Cancelado</option>
+                            <option value="Venda Anulada">Venda Anulada</option>
+                            <option value="PAGAR TAXA">PAGAR TAXA</option>
+                            <option value="Sem Contato">Sem Contato</option>
+                            <option value="PENDENCIA CLIENTE">PENDENCIA CLIENTE</option>
+                            <option value="PROPOSTA NEGADA/CANCELADA">PROPOSTA NEGADA/CANCELADA</option>
+                            <option value="PENDENCIA TECNICA">PENDENCIA TECNICA</option>
+                            <option value="Crédito Negado">Crédito Negado</option>
+                            <option value="Auditado">Auditado</option>
                         </select>
                     </div>
                     <div class="form-group">
                         <label for="operadora">Operadora:</label>
                         <select id="operadora" name="operadora">
+                            <option value="">Todas</option>
                             <option value="SKY">SKY</option>
                             <option value="VERO">VERO</option>
                             <!-- Adicione outras operadoras aqui -->
@@ -69,9 +86,10 @@
                     <div class="form-group">
                         <label for="equipe">Equipe:</label>
                         <select id="equipe" name="equipe">
-                            <option value="Goiania">Goiania</option>
-                            <option value="Caldas Novas">Caldas Novas</option>
-                            <option value="Rio Verde">Rio Verde</option>
+                            <option value="">Todas</option>
+                            <option value="vero-goiania">Vero Goiania</option>
+                            <option value="sky-goiania">SKY Goiania</option>
+                            <option value="vero-rio-goiania">Vero Rio Verde</option>
                             <!-- Adicione outras equipes aqui -->
                         </select>
                     </div>
@@ -128,17 +146,17 @@
         <div class="highlights">
         <div class="highlight">
             <p>VENDAS DIA</p>
-            <h2>1</h2>
+            <h2 id="q_vendedor_dia">1</h2>
             <small>DESTAQUE HOJE</small>
             <img src="/icones/perfil.png" alt="Carlos Daniel">
-            <p>Carlos Daniel Santos Silva</p>
+            <p id="m_vendedor_dia"></p>
         </div>
         <div class="highlight">
             <p>VENDAS MÊS</p>
-            <h2>34</h2>
+            <h2 id="q_vendedor_mes">34</h2>
             <small>DESTAQUE TOTAL</small>
             <img src="/icones/perfil.png" alt="Sky">
-            <p>Miqueias da Silva Oliveira</p>
+            <p id="m_vendedor_mes"></p>
         </div>
 
         <div class="charts">

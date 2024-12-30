@@ -1,5 +1,6 @@
 class Dashboard {
     constructor() {
+        this.graficoRendimentoRef = null;
         this.vendas = null;
         // Instancia a classe User
         this.user = new User();
@@ -22,31 +23,32 @@ class Dashboard {
         let formulario = document.querySelector("form");
         formulario.addEventListener("submit", (event) => {
             event.preventDefault(); // Impede o envio padrão do formulário
-            // Captura os dados do formulário
-            const formData = new FormData(formulario);
-            // Converte os dados do formulário em um objeto
-            const dadosFormulario = {};
+
+            // Cria um objeto FormData com os dados do formulário
+            let formData = new FormData(formulario);
+
+            // Converte os dados em um objeto ou faz algo com eles
+            let dadosFormulario = {};
             formData.forEach((value, key) => {
-                if (dadosFormulario[key]) {
-                    // Se já existir, transforma em array para múltiplos valores
-                    if (!Array.isArray(dadosFormulario[key])) {
-                        dadosFormulario[key] = [dadosFormulario[key]];
-                    }
-                    dadosFormulario[key].push(value);
-                } else {
-                    dadosFormulario[key] = value;
-                }
+                dadosFormulario[key] = value;
             });
-            // Exibe os dados capturados no console
-            console.log(dadosFormulario);
-            // Você pode agora usar esses dados para outras ações, como enviar para uma API
+
+            console.log(dadosFormulario); // Mostra os dados coletados no console
+
+            this.listarVendas(dadosFormulario);
+
+            setTimeout(() => {
+                this.graficoRendimento();
+                this.graficosStatus();
+                this.graficosVendedores();
+                this.graficosProdutos();
+            }, 3000);
         });
     }
 
     async listarVendas(data) {
         try {
             const usuario = JSON.parse(sessionStorage.getItem('usuario'));
-            console.log(this.userData);
             let user = usuario.user;
             var total_vendas = 0;
             var total_valores = 0;
@@ -55,7 +57,13 @@ class Dashboard {
             if (data == undefined) {
                 data = {};
             }
-            console.log(data);
+    
+            // Obter a data atual para filtro
+            const hoje = new Date().toISOString().split('T')[0]; // Data no formato 'YYYY-MM-DD'
+            const mesAtual = new Date().getMonth(); // Índice do mês atual (0-11)
+    
+            const vendasPorVendedorDia = {};
+            const vendasPorVendedorMes = {};
     
             // Envia os dados para o servidor usando fetch
             const response = await fetch('http://192.168.20.171:3000/vendas/listar-vendas', {
@@ -70,8 +78,27 @@ class Dashboard {
             const result = await response.json();
             if (response.ok) {
                 this.vendas = result.vendas;
+                console.log(this.vendas);
                 result.vendas.forEach(venda => {
-                    console.log(venda);
+                    const vendaData = venda.data_Status?.split('T')[0]; // Data da venda no formato 'YYYY-MM-DD'
+                    const vendaMes = new Date(venda.data_Status).getMonth(); // Mês da venda (0-11)
+                    const vendedor = venda.vendedor;
+    
+                    // Contagem de vendas por vendedor no dia
+                    if (vendaData === hoje /* && venda.status == "Concluído"*/) {
+                        if (!vendasPorVendedorDia[vendedor]) {
+                            vendasPorVendedorDia[vendedor] = 0;
+                        }
+                        vendasPorVendedorDia[vendedor]++;
+                    }
+    
+                    // Contagem de vendas por vendedor no mês
+                    if (vendaMes === mesAtual /* && venda.status == "Concluído"*/) {
+                        if (!vendasPorVendedorMes[vendedor]) {
+                            vendasPorVendedorMes[vendedor] = 0;
+                        }
+                        vendasPorVendedorMes[vendedor]++;
+                    }
     
                     // Lógica para exibir vendas com base no cargo
                     if (user.cargo == 'Vendedor') {
@@ -81,7 +108,6 @@ class Dashboard {
                         // Exibir apenas as vendas do vendedor logado
                         if (venda.vendedor == user.usuario) {
                             let valor = parseInt(venda.valor_venda) || 0;
-
                             if (venda.status == 'Concluído') {
                                 total_vendas++;
                                 total_valores += valor;
@@ -102,13 +128,28 @@ class Dashboard {
                     }
                 });
     
+                // Identificar o maior vendedor do dia
+                const maiorVendedorDia = Object.keys(vendasPorVendedorDia).reduce((a, b) => 
+                    vendasPorVendedorDia[a] > vendasPorVendedorDia[b] ? a : b, null);
+                const quantidadeDia = maiorVendedorDia ? vendasPorVendedorDia[maiorVendedorDia] : 0;
+    
+                // Identificar o maior vendedor do mês
+                const maiorVendedorMes = Object.keys(vendasPorVendedorMes).reduce((a, b) => 
+                    vendasPorVendedorMes[a] > vendasPorVendedorMes[b] ? a : b, null);
+                const quantidadeMes = maiorVendedorMes ? vendasPorVendedorMes[maiorVendedorMes] : 0;
+    
+                // Atualiza os valores no HTML
+                document.querySelector("#m_vendedor_dia").innerHTML = maiorVendedorDia || 'Nenhum';
+                document.querySelector("#q_vendedor_dia").innerHTML = quantidadeDia || 0;
+                document.querySelector("#m_vendedor_mes").innerHTML = maiorVendedorMes || 'Nenhum';
+                document.querySelector("#q_vendedor_mes").innerHTML = quantidadeMes || 0;
+    
                 // Calcula a efetividade
                 let total_geral = total_vendas + propostas;
                 let efetividade = total_geral > 0 
                     ? ((total_vendas / total_geral) * 100).toFixed(2) 
                     : 0; // Evita divisão por zero
     
-                // Atualiza os valores no HTML
                 document.querySelector("#total_vendas").innerHTML = total_geral;
                 document.querySelector("#concluidas").innerHTML = total_vendas;
                 document.querySelector("#rendimento").innerHTML = `R$ ${total_valores},00`;
@@ -122,93 +163,88 @@ class Dashboard {
             alert('Ocorreu um erro ao tentar buscar as vendas.');
         }
     }
-
-
+    
     graficoRendimento() {
         const vendasPorDia = {};
-        const vendasPorStatus = {};
     
-        // Filtra todas as vendas
+        // Filtra todas as vendas e agrupa os valores por data
         this.vendas.forEach(venda => {
-            const dataVenda = venda.data_Status;  // Ex: '2024-12-01'
-            const statusVenda = venda.status; // Ex: 'Concluído'
-            
-            // Garantir que valor_venda seja um número float
-            const valorVenda = parseFloat(venda.valor_venda);
-            
-            if (isNaN(valorVenda)) {
-                console.warn(`Valor de venda inválido para a venda em ${dataVenda}: ${venda.valor_venda}`);
-                return;  // Ignora essa venda, caso o valor seja inválido
+            console.log(venda)
+            const dataVenda = venda.data_venda; // Data da venda
+            const valorVenda = parseFloat(venda.valor_venda); // Valor da venda como float
+
+            // Agrupa os valores por data
+            if (vendasPorDia[dataVenda]) {
+                vendasPorDia[dataVenda] += valorVenda;
+            } else {
+                vendasPorDia[dataVenda] = valorVenda;
             }
-    
-            // Somar vendas por dia
-            if (!vendasPorDia[dataVenda]) {
-                vendasPorDia[dataVenda] = 0;
-            }
-            vendasPorDia[dataVenda] += valorVenda;
-    
-            // Contar a quantidade de vendas por status
-            if (!vendasPorStatus[dataVenda]) {
-                vendasPorStatus[dataVenda] = {};
-            }
-            if (!vendasPorStatus[dataVenda][statusVenda]) {
-                vendasPorStatus[dataVenda][statusVenda] = 0;
-            }
-            vendasPorStatus[dataVenda][statusVenda] += 1;  // Incrementa a quantidade de vendas para esse status
-    
-            // Log para verificar as vendas por status
-            console.log(`Data: ${dataVenda}, Status: ${statusVenda}, Total Vendas: ${vendasPorStatus[dataVenda][statusVenda]}`);
         });
     
-        // Preparando os dados para o gráfico de vendas por dia
+        // Preparando os dados para o gráfico
         const labels = Object.keys(vendasPorDia); // Datas
-        const dadosVendas = Object.values(vendasPorDia); // Somatório das vendas por dia
+        const dadosVendas = Object.values(vendasPorDia); // Somatório das vendas por data
         const dadosComissao = dadosVendas.map(venda => venda * 0.1); // Comissão de 10%
     
+        // Configurando o gráfico
         const ctxVendas = document.getElementById('rendimentoChart').getContext('2d');
-        new Chart(ctxVendas, {
+    
+        // Destruir gráfico existente, se houver
+        if (this.graficoRendimentoRef) {
+            this.graficoRendimentoRef.destroy();
+        }
+    
+        // Criar um novo gráfico e armazenar a referência
+        this.graficoRendimentoRef = new Chart(ctxVendas, {
             type: 'line',
             data: {
                 labels: labels, // Datas dos dias
-                datasets: [{
-                    label: 'Vendas',
-                    data: dadosVendas, // Valores de vendas
-                    borderColor: 'blue',
-                    fill: false
-                }, {
-                    label: 'Comissão',
-                    data: dadosComissao, // Valores de comissão
-                    borderColor: 'black',
-                    fill: false
-                }]
+                datasets: [
+                    {
+                        label: 'Vendas',
+                        data: dadosVendas, // Valores de vendas
+                        borderColor: 'blue',
+                        fill: false
+                    },
+                    {
+                        label: 'Comissão',
+                        data: dadosComissao, // Valores de comissão
+                        borderColor: 'black',
+                        fill: false
+                    }
+                ]
             }
         });
     }
-
+    
     graficosVendedores() {
         const vendasPorVendedor = {};
     
         // Agrupar vendas por vendedor e contar a quantidade
         this.vendas.forEach(venda => {
-            if(venda.status == 'Concluído'){
+            if (venda.status === 'Concluído') {
                 const vendedor = venda.vendedor;  // Supondo que 'vendedor' seja o nome ou ID do vendedor
-            
+    
                 if (!vendasPorVendedor[vendedor]) {
                     vendasPorVendedor[vendedor] = 0;
                 }
-        
+    
                 vendasPorVendedor[vendedor] += 1; 
             }
-            // Incrementa a contagem de vendas
         });
     
         // Preparar os dados para o gráfico
         const vendedores = Object.keys(vendasPorVendedor);  // Nomes ou IDs dos vendedores
         const vendas = Object.values(vendasPorVendedor);  // Quantidade de vendas por vendedor
     
+        // Verifica se o gráfico já existe e o destrói
+        if (this.vendedorChartInstance) {
+            this.vendedorChartInstance.destroy();
+        }
+    
         // Criando o gráfico de barras horizontais
         const vendedorChart = document.getElementById('topVendedores').getContext('2d');
-        new Chart(vendedorChart, {
+        this.vendedorChartInstance = new Chart(vendedorChart, {
             type: 'bar',  // Tipo de gráfico: barras
             data: {
                 labels: vendedores,  // Vendedores (nomes ou IDs)
@@ -275,9 +311,14 @@ class Dashboard {
         const produtos = Object.keys(produtosVendidos);  // Nomes dos produtos
         const quantidades = Object.values(produtosVendidos);  // Quantidade de cada produto vendido
     
+        // Verifica se o gráfico já existe e o destrói
+        if (this.produtoChartInstance) {
+            this.produtoChartInstance.destroy();
+        }
+    
         // Criando o gráfico de colunas
         const produtoChart = document.getElementById('produtosVendidos').getContext('2d');
-        new Chart(produtoChart, {
+        this.produtoChartInstance = new Chart(produtoChart, {
             type: 'bar',  // Tipo de gráfico: colunas
             data: {
                 labels: produtos,  // Nomes dos produtos
@@ -317,7 +358,6 @@ class Dashboard {
             }
         });
     }
-
     
     graficosStatus() {
         const vendasPorStatus = {};
@@ -384,9 +424,14 @@ class Dashboard {
             stack: 'stack1' // Necessário para criar barras empilhadas
         }));
     
+        // Verifica se o gráfico já existe e o destrói
+        if (this.chartInstance) {
+            this.chartInstance.destroy();
+        }
+    
         // Criando o gráfico de barras empilhadas
         const vendaStatus = document.getElementById('vendaStatus').getContext('2d');
-        new Chart(vendaStatus, {
+        this.chartInstance = new Chart(vendaStatus, {
             type: 'bar',  // Tipo de gráfico: barras
             data: {
                 labels: statusLabels, // Datas dos dias, agora ordenadas
@@ -420,7 +465,6 @@ class Dashboard {
             }
         });
     }
-    
     
     
 }

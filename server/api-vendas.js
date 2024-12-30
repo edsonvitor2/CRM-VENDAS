@@ -40,7 +40,9 @@ router.post('/listar-vendas', async (req, res) => {
             vendedor,
             cpf_cliente,
             operadora,
-            quantidade // Limite de vendas a retornar
+            quantidade,
+            equipe,
+            status
         } = req.body;
 
         console.log(nome_cliente,
@@ -55,7 +57,10 @@ router.post('/listar-vendas', async (req, res) => {
             vendedor,
             cpf_cliente,
             operadora,
-            quantidade)
+            equipe,
+            quantidade,
+            status);
+
         // Conecta ao banco especificado
         const pool = await db();
 
@@ -102,9 +107,22 @@ router.post('/listar-vendas', async (req, res) => {
             query += ` AND operadora LIKE @operadora`;
         }
 
+        // Filtro por equipe
+        if (equipe) {
+            query += ` AND equipe LIKE @equipe`;
+        }
+
+        // Filtro por status
+        if (status) {
+            query += ` AND status = @status`;
+        }
+
+        // Ordenação para pegar de baixo para cima com base no cliente_id
+        query += ` ORDER BY cliente_id DESC`;
+
         // Limite de resultados (quantidade)
         if (quantidade) {
-            query += ` TOP (@quantidade) `;
+            query += ` OFFSET 0 ROWS FETCH NEXT @quantidade ROWS ONLY`;
         }
 
         // Executa a consulta SQL com os filtros aplicados
@@ -112,7 +130,7 @@ router.post('/listar-vendas', async (req, res) => {
 
         // Adiciona os parâmetros à consulta, se fornecidos
         if (nome_cliente) {
-            request.input('cliente', sql.NVarChar, `%${nome_cliente}%`); // Usando LIKE para filtro parcial
+            request.input('cliente', sql.NVarChar, `%${nome_cliente}%`);
         }
         if (data_status_inicio && data_status_fim) {
             request.input('data_status_inicio', sql.NVarChar, data_status_inicio);
@@ -139,6 +157,12 @@ router.post('/listar-vendas', async (req, res) => {
         if (operadora) {
             request.input('operadora', sql.NVarChar, `%${operadora}%`);
         }
+        if (equipe) {
+            request.input('equipe', sql.NVarChar, `%${equipe}%`);
+        }
+        if (status) {
+            request.input('status', sql.NVarChar, status);
+        }
         if (quantidade) {
             request.input('quantidade', sql.Int, quantidade);
         }
@@ -146,6 +170,7 @@ router.post('/listar-vendas', async (req, res) => {
         // Executa a consulta com os parâmetros
         const result = await request.query(query);
 
+        console.log(result.recordset);
         // Retorna os resultados
         res.status(200).json({ message: 'Vendas encontradas com sucesso!', vendas: result.recordset });
     } catch (error) {
