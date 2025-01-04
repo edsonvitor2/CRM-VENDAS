@@ -38,7 +38,7 @@ class EditarVendas {
                 console.log('Venda recuperada do sessionStorage:', vendaSelecionada);
                 
                 // Envia o id da venda via POST para a rota 'vendaCliente'
-                const response = await fetch('http://192.168.20.171:3000/vendas/vendaCliente', {
+                const response = await fetch('http://192.168.4.11:3200/vendas/vendaCliente', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -157,7 +157,7 @@ class EditarVendas {
     
         // Enviar os dados ao servidor
         try {
-            const response = await fetch(`http://192.168.20.171:3000/vendas/editar-venda/${vendaId}`, {
+            const response = await fetch(`http://192.168.4.11:3200/vendas/editar-venda/${vendaId}`, {
                 method: "PUT", // Altere para PUT
                 headers: {
                     "Content-Type": "application/json",

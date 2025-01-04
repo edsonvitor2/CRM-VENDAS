@@ -137,7 +137,7 @@ class Vendas {
     
         // Enviar os dados ao servidor
         try {
-            const response = await fetch("http://192.168.20.171:3000/vendas/cadastrar-venda", {
+            const response = await fetch("http://192.168.4.11:3200/vendas/cadastrar-venda", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",

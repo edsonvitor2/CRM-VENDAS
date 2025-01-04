@@ -40,7 +40,7 @@ class Usuarios {
     async listarVendas(data) {
         try {
             // Envia os dados para o servidor usando fetch
-            const response = await fetch('http://192.168.20.171:3000/vendas/listar-vendas', {
+            const response = await fetch('http://192.168.4.11:3200/vendas/listar-vendas', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
