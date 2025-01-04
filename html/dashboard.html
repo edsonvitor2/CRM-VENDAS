@@ -89,7 +89,7 @@
                             <option value="">Todas</option>
                             <option value="vero-goiania">Vero Goiania</option>
                             <option value="sky-goiania">SKY Goiania</option>
-                            <option value="vero-rio-goiania">Vero Rio Verde</option>
+                            <option value="vero-rio-verde">Vero Rio Verde</option>
                             <!-- Adicione outras equipes aqui -->
                         </select>
                     </div>
@@ -98,7 +98,6 @@
                     </div>
                 </div>
             </form>
-            
         </div>
 
         <!-- Cards -->
@@ -183,9 +182,35 @@
     </div>
     
 </div>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="/login.js"></script>
-<script src="/src/dashboard.js"></script>
+<script>
+    // Função para obter o primeiro e último dia do mês atual
+    function setDateFields() {
+        const today = new Date();
+        
+        // Primeiro dia do mês
+        const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
+        // Último dia do mês
+        const lastDay = new Date(today.getFullYear(), today.getMonth() + 1, 0);
 
+        // Formatando para yyyy-MM-dd
+        const formatDate = (date) => {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        };
+
+        // Atualizando os campos de data
+        document.getElementById('data_venda_inicio').value = formatDate(firstDay);
+        document.getElementById('data_venda_fim').value = formatDate(lastDay);
+    }
+
+    // Chamando a função ao carregar a página
+    window.onload = setDateFields;
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="/src/dashboard.js"></script>
+<script src="/login.js"></script>
 </body>
 </html>

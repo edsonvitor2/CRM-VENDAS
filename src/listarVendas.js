@@ -1,7 +1,23 @@
 class ListarVendas {
     constructor() {
         this.interface();
+        this.verificarLogado();
         this.listarVendas();
+        
+        setInterval(() => {
+            this.listarVendas();
+        }, 5000);
+    }
+
+    verificarLogado() {
+        const usuario = JSON.parse(sessionStorage.getItem('usuario'));
+        // Verifica se há um usuário logado
+        if (!usuario || !usuario.user) {
+            // Redireciona para a página index.html
+            window.location.href = 'index.html';
+        }else{
+            document.querySelector(".username").innerHTML = usuario.user.usuario;
+        }
     }
 
     interface() {

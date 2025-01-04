@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Usuarios</title>
+    <link rel="stylesheet" href="/css/cadastroVendas.css">
+</head>
+<body>
+     <!-- Sidebar -->
+     <div class="sidebar">
+        <div class="logo">
+            <h2>AgeSystem 3.0</h2>
+        </div>
+        <div class="user-info">
+            <img src="/user.png" alt="User" class="user-img">
+            <p>Bem vindo, <br><span class="username">Base SKY</span></p>
+            <p class="status">Status<br><span class="available">Disponível</span> <br><span id="time">07:00:02</span></p>
+        </div>
+        <nav class="menu">
+            <ul>
+                <a href="/html/dashboard.html"> <li><i class="fas fa-chart-line"></i> Vendas</li>  </a>
+                <a href="/html/dashboard.html"> <li><i class="fas fa-user-plus"></i> Usuarios</li>  </a>
+                <a href="/html/dashboard.html"> <li><i class="fas fa-book"></i> Listas</li>  </a>
+                <a href="/html/dashboard.html"> <li><i class="fas fa-bullhorn"></i> Campanhas</li>  </a>
+            </ul>
+        </nav>
+    </div>
+
+    <!-- Conteúdo Principal -->
+    
+    
+    <form action="" method="POST" id="formulario">
+        <!-- Dados Pessoais -->
+        <h1>Dados do Usuario</h1>
+        <p>Campos com o símbolo * são obrigatórios.</p>
+        <fieldset>
+            <legend><strong>Dados Pessoais</strong></legend>
+            <div class="bloco">
+                <label for="cpf">CPF *</label>
+                <input type="text" id="cpf" name="cpf" placeholder="999.999.999-99" required>
+            </div>
+            
+            <div class="bloco">
+                <label for="nome">Nome *</label>
+                <input type="text" id="nome" name="nome" placeholder="Ex: João Lopes da Silva" required>
+            </div>
+
+            <div class="bloco">
+                <label for="data_nascimento">Data de Nascimento</label>
+                <input type="date" id="data_nascimento" name="data_nascimento">
+            </div>
+
+            <div class="bloco">
+                <label for="telefone-celular">Telefone Celular</label>
+                <input type="tel" id="telefone_celular" name="telefone_celular" placeholder="Ex: (00) 00000-0000">
+            </div>
+
+            <div class="bloco">
+                <label for="telefone-whatsapp">Telefone WhatsApp</label>
+                <input type="tel" id="telefone_whatsapp" name="telefone_whatsapp" placeholder="Ex: (00) 00000-0000">
+            </div>
+
+            <div class="bloco">
+                <label for="email">E-mail</label>
+                <input type="email" id="email" name="email" placeholder="Ex: joaosilva@gmail.com">
+            </div>
+
+            <div class="bloco">
+                <label for="equipe">Equipe: *</label>
+                    <select id="equipe" name="equipe">
+                        <option value="">Selecione</option>
+                        <option value="vero-goiania">Vero Goiania</option>
+                        <option value="sky-goiania">SKY Goiania</option>
+                        <option value="vero-rio-verde">Vero Rio Verde</option>
+                        <!-- Adicione outras equipes aqui -->
+                    </select>
+            </div>
+
+            <div class="bloco">
+                <label for="operadora">Operadora: *</label>
+                <select id="operadora" name="operadora">
+                    <option value="">Selecione</option>
+                    <option value="SKY">SKY</option>
+                    <option value="VERO">VERO</option>
+                    <!-- Adicione outras operadoras aqui -->
+                </select>
+            </div>
+
+            <div class="bloco">
+                <label for="status">Status: *</label>
+                <select id="status" name="status" required>
+                    <option value="">Selecione</option>
+                    <option value="ATIVO">ATIVO</option>
+                    <option value="INATIVO">INATIVO</option>
+                    <!-- Adicione outras operadoras aqui -->
+                </select>
+            </div>
+
+            <div class="bloco">
+                <label for="cargo">Cargo: *</label>
+                <select id="cargo" name="cargo" required>
+                    <option value="">Selecione</option>
+                    <option value="Gerente">Gerente</option>
+                    <option value="Vendedor">Vendedor</option>
+                    <option value="Supervisor">Supervisor</option>
+                    <option value="Backoffice">Backoffice</option>
+                    <option value="Desenvolvedor">Desenvolvedor</option>
+                    <!-- Adicione outras operadoras aqui -->
+                </select>
+            </div>
+        </fieldset>
+
+        <button type="submit">Salvar Venda</button>
+    </form>
+
+    <div id="listarUsuarios">
+        <table>
+            <thead>
+                <th>CPF</th>
+                <th>Nome </th>
+                <th>Telefone Celular</th>
+                <th>Telefone WhatsApp</th>
+                <th>Data de Nascimento</th>
+                <th>E-mail</th>
+                <th>Equipe</th>
+                <th>Operadora</th>
+                <th>Status</th>
+                <th>Cargo</th>
+            </thead>
+            <tbody id="lista_contatos">
+
+            </tbody>
+        </table>
+    </div>
+
+</body>
+</html>

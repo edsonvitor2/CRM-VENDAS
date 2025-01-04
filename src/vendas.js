@@ -1,18 +1,35 @@
 class Vendas {
     constructor() {
         this.interface();
+        this.verificarLogado();
+    }
 
-        
+    verificarLogado() {
+        const usuario = JSON.parse(sessionStorage.getItem('usuario'));
+        // Verifica se há um usuário logado
+        if (!usuario || !usuario.user) {
+            // Redireciona para a página index.html
+            window.location.href = 'index.html';
+        }else{
+            document.querySelector(".username").innerHTML = usuario.user.usuario;
+        }
     }
 
     interface() {
+            // Atualiza o nome do usuário no HTML, se necessário
+            
+
         let formulario = document.querySelector("form");
         let cepInput = document.querySelector("#cep");
 
         const usuario = JSON.parse(sessionStorage.getItem('usuario'));
         const operadora = usuario.user.operadora;
 
-        console.log(operadora)
+        const usuarioNomeDiv = document.querySelector('.username');
+        
+        if (usuarioNomeDiv) {
+            usuarioNomeDiv.textContent = `${usuario.user.usuario}`; // Supondo que o servidor retorne um campo "usuario"
+        }
 
         document.querySelector("#operadora").value = operadora;
 
@@ -134,6 +151,7 @@ class Vendas {
     
             const responseData = await response.json();
             alert("Venda cadastrada com sucesso!");
+            window.location.reload();
             console.log("Venda cadastrada com sucesso:", responseData);
         } catch (error) {
             console.error("Erro ao cadastrar a venda:", error);

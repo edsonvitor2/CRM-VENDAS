@@ -45,7 +45,7 @@ router.post('/listar-vendas', async (req, res) => {
             status
         } = req.body;
 
-        console.log(nome_cliente,
+        /*console.log(nome_cliente,
             data_status_inicio,
             data_status_fim,
             data_efetivacao_inicio,
@@ -60,7 +60,7 @@ router.post('/listar-vendas', async (req, res) => {
             equipe,
             quantidade,
             status);
-
+*/
         // Conecta ao banco especificado
         const pool = await db();
 
@@ -170,7 +170,6 @@ router.post('/listar-vendas', async (req, res) => {
         // Executa a consulta com os parâmetros
         const result = await request.query(query);
 
-        console.log(result.recordset);
         // Retorna os resultados
         res.status(200).json({ message: 'Vendas encontradas com sucesso!', vendas: result.recordset });
     } catch (error) {
@@ -317,7 +316,7 @@ router.post('/cadastrar-venda', async (req, res) => {
                 equipe,status, cpf_cliente, cliente, cliente_id, data_status, vendedor, 
                 operadora, produtos, valor_venda, valor_comissao, metodo_pagamento,data_venda
             ) VALUES (
-                @equipe,'pre-venda', @cpf_cliente, @cliente, @cliente_id, @data_status, @vendedor, 
+                @equipe,'Pré-Venda', @cpf_cliente, @cliente, @cliente_id, @data_status, @vendedor, 
                 @operadora, @produtos, @valor_venda, @valor_comissao, @metodo_pagamento,@data_venda
             );
         `;

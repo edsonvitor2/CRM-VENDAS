@@ -2,12 +2,8 @@ class Dashboard {
     constructor() {
         this.graficoRendimentoRef = null;
         this.vendas = null;
-        // Instancia a classe User
-        this.user = new User();
-        // Pega os dados do usuário
-        this.userData = this.user.usuarioLogado; // Acessa a propriedade salva no construtor
-        // Inicializa as vendas
-        this.listarVendas();
+        
+        this.verificarLogado();
         this.interface();
 
         setTimeout(() => {
@@ -17,6 +13,17 @@ class Dashboard {
             this.graficosProdutos();
         }, 3000);
 
+    }
+
+    verificarLogado() {
+        const usuario = JSON.parse(sessionStorage.getItem('usuario'));
+        // Verifica se há um usuário logado
+        if (!usuario || !usuario.user) {
+            // Redireciona para a página index.html
+            window.location.href = 'index.html';
+        }else{
+            document.querySelector(".username").innerHTML = usuario.user.usuario;
+        }
     }
 
     interface(){
@@ -60,7 +67,11 @@ class Dashboard {
     
             // Obter a data atual para filtro
             const hoje = new Date().toISOString().split('T')[0]; // Data no formato 'YYYY-MM-DD'
-            const mesAtual = new Date().getMonth(); // Índice do mês atual (0-11)
+            
+            const dataFimInput = document.getElementById("data_venda_fim");
+            const valorInput = dataFimInput.value; // Exemplo: "2024-12-30"
+            const dataSelecionada = new Date(valorInput);
+            const mesAtual = dataSelecionada.getMonth();
     
             const vendasPorVendedorDia = {};
             const vendasPorVendedorMes = {};
@@ -78,14 +89,14 @@ class Dashboard {
             const result = await response.json();
             if (response.ok) {
                 this.vendas = result.vendas;
-                console.log(this.vendas);
+                console.log(this.vendas)
                 result.vendas.forEach(venda => {
                     const vendaData = venda.data_Status?.split('T')[0]; // Data da venda no formato 'YYYY-MM-DD'
                     const vendaMes = new Date(venda.data_Status).getMonth(); // Mês da venda (0-11)
                     const vendedor = venda.vendedor;
     
                     // Contagem de vendas por vendedor no dia
-                    if (vendaData === hoje /* && venda.status == "Concluído"*/) {
+                    if (vendaData === hoje && venda.status == "Concluído") {
                         if (!vendasPorVendedorDia[vendedor]) {
                             vendasPorVendedorDia[vendedor] = 0;
                         }
@@ -93,7 +104,7 @@ class Dashboard {
                     }
     
                     // Contagem de vendas por vendedor no mês
-                    if (vendaMes === mesAtual /* && venda.status == "Concluído"*/) {
+                    if (vendaMes === mesAtual && venda.status == "Concluído") {
                         if (!vendasPorVendedorMes[vendedor]) {
                             vendasPorVendedorMes[vendedor] = 0;
                         }
@@ -169,15 +180,16 @@ class Dashboard {
     
         // Filtra todas as vendas e agrupa os valores por data
         this.vendas.forEach(venda => {
-            console.log(venda)
-            const dataVenda = venda.data_venda; // Data da venda
-            const valorVenda = parseFloat(venda.valor_venda); // Valor da venda como float
-
-            // Agrupa os valores por data
-            if (vendasPorDia[dataVenda]) {
-                vendasPorDia[dataVenda] += valorVenda;
-            } else {
-                vendasPorDia[dataVenda] = valorVenda;
+            if (venda.status === 'Concluído') { // Verifica se o status da venda é "Concluído"
+                const dataVenda = venda.data_venda; // Data da venda
+                const valorVenda = parseFloat(venda.valor_venda); // Valor da venda como float
+        
+                // Agrupa os valores por data
+                if (vendasPorDia[dataVenda]) {
+                    vendasPorDia[dataVenda] += valorVenda;
+                } else {
+                    vendasPorDia[dataVenda] = valorVenda;
+                }
             }
         });
     
@@ -295,16 +307,19 @@ class Dashboard {
     
         // Processar todas as vendas e contar os produtos
         this.vendas.forEach(venda => {
-            const produtos = venda.produtos; // Supondo que 'produtos' é uma string com produtos separados por vírgulas
-            if (!produtos) return;
-            // Separar os produtos e iterar sobre eles
-            produtos.split(',').forEach(produto => {
-                const produtoTrimmed = produto.trim(); // Remover espaços extras
-                if (!produtosVendidos[produtoTrimmed]) {
-                    produtosVendidos[produtoTrimmed] = 0;
-                }
-                produtosVendidos[produtoTrimmed] += 1; // Incrementa a contagem
-            });
+            if (venda.status == 'Concluído') { // Verifica se o status da venda é "Concluído"
+                const produtos = venda.produtos; // Supondo que 'produtos' é uma string com produtos separados por vírgulas
+                if (!produtos) return;
+                
+                // Separar os produtos e iterar sobre eles
+                produtos.split(',').forEach(produto => {
+                    const produtoTrimmed = produto.trim(); // Remover espaços extras
+                    if (!produtosVendidos[produtoTrimmed]) {
+                        produtosVendidos[produtoTrimmed] = 0;
+                    }
+                    produtosVendidos[produtoTrimmed] += 1; // Incrementa a contagem
+                });
+            }
         });
     
         // Preparar os dados para o gráfico
@@ -470,3 +485,31 @@ class Dashboard {
 }
 
 var dash = new Dashboard();
+
+window.addEventListener("load", () => {
+    // Obtém os dados do formulário automaticamente quando a página é carregada
+    let formulario = document.querySelector("form");
+
+    if (formulario) {
+        // Cria um objeto FormData com os dados do formulário
+        let formData = new FormData(formulario);
+
+        // Converte os dados em um objeto ou faz algo com eles
+        let dadosFormulario = {};
+        formData.forEach((value, key) => {
+            dadosFormulario[key] = value;
+        });
+
+        console.log(dadosFormulario); // Mostra os dados coletados no console
+
+        // Chamadas das funções
+        dash.listarVendas(dadosFormulario);
+
+        setTimeout(() => {
+            dash.graficoRendimento();
+            dash.graficosStatus();
+            dash.graficosVendedores();
+            dash.graficosProdutos();
+        }, 3000);
+    }
+});
